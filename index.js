@@ -3,6 +3,7 @@ import cors from 'cors'
 import morgan from 'morgan'
 import colors from 'colors';
 import dotenv from 'dotenv'
+import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js'
 import router from './routes/api.route.js'
 dotenv.config();
@@ -11,7 +12,8 @@ const app = express();
 app.use(cors())
 app.use(morgan('dev'));
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 // route
 app.use('/api', router);
 

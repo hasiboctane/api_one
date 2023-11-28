@@ -3,6 +3,9 @@ import User from '../models/user.model.js';
 const UserController = {
     getUsers: async (req, res) => {
         try {
+            const options = {
+                password: 0
+            }
             const users = await User.find({});
             res.status(200).send({
                 success: true,
@@ -57,14 +60,34 @@ const UserController = {
                     if (!isMatch) {
                         res.status(400).send({ message: 'Credentials do not match' });
                     } else {
-                        res.status(200).send({
+                        // token 
+                        const token = user.generateToken();
+                        res.status(200).cookie('token', token, { httpOnly: true, expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7) }).send({
                             success: true,
                             message: 'User logged in successfully',
+                            token,
                             user
                         })
                     }
                 }
             }
+        } catch (error) {
+            res.status(500).send({
+                success: false,
+                message: error.message,
+                error: error
+            });
+        }
+    },
+    getUserProfile: async (req, res) => {
+        try {
+            const user = await User.findById(req.user._id, { password: 0 });
+            res.status(200).send({
+                success: true,
+                message: 'User profile fetched successfully',
+                // user: req.user
+                user
+            })
         } catch (error) {
             res.status(500).send({
                 success: false,
