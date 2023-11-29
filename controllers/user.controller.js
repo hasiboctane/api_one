@@ -79,6 +79,21 @@ const UserController = {
             });
         }
     },
+    logoutUser: async (req, res) => {
+        try {
+            // clear cookie and redirect
+            res.status(200).clearCookie('token').send({
+                success: true,
+                message: 'User logged out successfully'
+            })
+        } catch (error) {
+            res.status(500).send({
+                success: false,
+                message: error.message,
+                error: error
+            });
+        }
+    },
     getUserProfile: async (req, res) => {
         try {
             const user = await User.findById(req.user._id, { password: 0 });
@@ -88,6 +103,55 @@ const UserController = {
                 // user: req.user
                 user
             })
+        } catch (error) {
+            res.status(500).send({
+                success: false,
+                message: error.message,
+                error: error
+            });
+        }
+    },
+    updateUserProfile: async (req, res) => {
+        try {
+            const user = await User.findById(req.user._id);
+            const { name, email, address, city, country, phone } = req.body;
+            if (name) user.name = name;
+            if (email) user.email = email;
+            if (address) user.address = address;
+            if (city) user.city = city;
+            if (country) user.country = country;
+            if (phone) user.phone = phone;
+            await user.save();
+            res.status(200).send({
+                success: true,
+                message: 'User profile updated successfully'
+            })
+        } catch (error) {
+            res.status(500).send({
+                success: false,
+                message: error.message,
+                error: error
+            });
+        }
+    },
+    updateUserPassword: async (req, res) => {
+        try {
+            const user = await User.findById(req.user._id);
+            const { oldPassword, newPassword } = req.body;
+            if (!oldPassword || !newPassword) {
+                res.status(400).send({ message: 'Please provide old and new password' })
+            }
+            const isMatch = await user.comparePassword(oldPassword);
+            if (!isMatch) {
+                res.status(400).send({ message: 'Old password is incorrect' })
+            } else {
+                user.password = newPassword;
+                await user.save();
+                res.status(200).send({
+                    success: true,
+                    message: "password updated successfully"
+                });
+            }
         } catch (error) {
             res.status(500).send({
                 success: false,
