@@ -32,8 +32,13 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add phone number']
     },
-    profile: {
-        type: String
+    profilePic: {
+        public_id: {
+            type: String
+        },
+        url: {
+            type: String
+        }
     }
 },
     {

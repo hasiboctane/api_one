@@ -1,5 +1,8 @@
-import express from 'express'
+import express from 'express';
+import cloudinary from 'cloudinary';
+
 import User from '../models/user.model.js';
+import getDataUri from '../utils/features.js';
 const UserController = {
     getUsers: async (req, res) => {
         try {
@@ -152,6 +155,31 @@ const UserController = {
                     message: "password updated successfully"
                 });
             }
+        } catch (error) {
+            res.status(500).send({
+                success: false,
+                message: error.message,
+                error: error
+            });
+        }
+    },
+    updateUserProfilePicture: async (req, res) => {
+        try {
+            const user = await User.findById(req.user._id);
+            const file = getDataUri(req.file);
+            // delete previous picture
+            await cloudinary.v2.uploader.destroy(user.profilePic.public_id);
+            // update picture
+            const result = await cloudinary.v2.uploader.upload(file.content);
+            user.profilePic = {
+                public_id: result.public_id,
+                url: result.secure_url
+            }
+            await user.save();
+            res.status(200).send({
+                success: true,
+                message: 'Profile picture updated successfully'
+            })
         } catch (error) {
             res.status(500).send({
                 success: false,
