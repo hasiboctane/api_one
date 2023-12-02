@@ -27,7 +27,7 @@ const UserController = {
         try {
             const { name, email, password, address, city, country, phone } = req.body;
             if (!name || !email || !password || !address || !city || !country || !phone) {
-                res.status(400).send({ message: 'Please fill all the fields' })
+                return res.status(400).send({ message: 'Please fill all the fields' })
             } else {
                 const user = await User.findOne({ email });
                 if (user) {
