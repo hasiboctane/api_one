@@ -8,5 +8,6 @@ productRoute.get('/', isAuth, ProductController.getAllProducts);
 productRoute.get('/:id', isAuth, ProductController.getProductById);
 productRoute.post('/add', isAuth, singleUpload, ProductController.addProduct);
 productRoute.put('/update/:id', isAuth, ProductController.updateProduct);
+productRoute.put('/update-image/:id', isAuth, singleUpload, ProductController.updateProductImage);
 
 export default productRoute
