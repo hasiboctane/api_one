@@ -166,6 +166,95 @@ const ProductController = {
                 error: error
             });
         }
+    },
+    deleteProductImage: async (req, res) => {
+        try {
+            const product = await Product.findById(req.params.id);
+            if (!product) {
+                return res.status(404).send({
+                    success: false,
+                    message: 'Product not found'
+                });
+            }
+            // image Id
+            const id = req.query.id;
+            if (!id) {
+                return res.status(400).send({
+                    success: false,
+                    message: 'Please provide image Id'
+                });
+            }
+            let isExist = -1;
+            product.images.forEach((item, index) => {
+                if (item._id.toString() === id.toString()) {
+                    isExist = index;
+                }
+            });
+            if (isExist < 0) {
+                return res.status(404).send({
+                    success: false,
+                    message: 'Image not found'
+                });
+            }
+            // delete image from cloudinary
+            await cloudinary.v2.uploader.destroy(product.images[isExist].public_id);
+            // delete image from Database
+            product.images.splice(isExist, 1);
+            await product.save();
+            res.status(200).send({
+                success: true,
+                message: 'Product image deleted successfully',
+                product
+            });
+
+        } catch (error) {
+            // Cast error
+            if (error.name === 'CastError') {
+                return res.status(404).send({
+                    success: false,
+                    message: 'Invalid Product Id'
+                });
+            }
+            res.status(500).send({
+                success: false,
+                message: error.message,
+                error: error
+            });
+        }
+    },
+    deleteProduct: async (req, res) => {
+        try {
+            const product = await Product.findById(req.params.id);
+            if (!product) {
+                return res.status(404).send({
+                    success: false,
+                    message: 'Product not found'
+                });
+            }
+            // delete image from cloudinary 
+            for (let index = 0; index < product.images.length; index++) {
+                await cloudinary.v2.uploader.destroy(product.images[index].public_id);
+            }
+            // delete product from database
+            await product.deleteOne();
+            res.status(200).send({
+                success: true,
+                message: 'Product deleted successfully'
+            });
+        } catch (error) {
+            // Cast error
+            if (error.name === 'CastError') {
+                return res.status(404).send({
+                    success: false,
+                    message: 'Invalid Product Id'
+                });
+            }
+            res.status(500).send({
+                success: false,
+                message: error.message,
+                error: error
+            });
+        }
     }
 }
 export default ProductController;
