@@ -110,6 +110,48 @@ const CategoryController = {
                 error: error
             });
         }
+    },
+    updateCategory: async (req, res) => {
+        try {
+            const category = await Category.findById(req.params.id);
+            if (!category) {
+                return res.status(404).send({
+                    success: false,
+                    message: 'Category not found'
+                });
+            }
+            // get updated category
+            const { updatedCategory } = req.body;
+            // find products with this category 
+            const products = await Product.find({ category: category._id });
+            for (let i = 0; i < products.length; i++) {
+                const product = products[i];
+                product.category = updatedCategory;
+                // save product
+                await product.save();
+            }
+            // update category
+            if (updatedCategory) category.category = updatedCategory;
+            await category.save();
+            res.status(200).send({
+                success: true,
+                message: 'Category updated successfully',
+                category
+            })
+        } catch (error) {
+            // CastError 
+            if (error.name === 'CastError') {
+                return res.status(404).send({
+                    success: false,
+                    message: 'Invalid Id'
+                });
+            }
+            res.status(500).send({
+                success: false,
+                message: error.message,
+                error: error
+            });
+        }
     }
 }
 
